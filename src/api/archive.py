@@ -27,7 +27,7 @@ async def get_video_from_archive(url: str, filepath: Path) -> None:
     async with aiohttp.ClientSession(timeout=timeout) as session:
         try:
             log.info("download_start", url=url, filepath=str(filepath))
-            async with session.get(url) as response:
+            async with session.get(url, ssl=False) as response:
                 response.raise_for_status()
 
                 async with aiofiles.open(filepath, "wb") as f:
