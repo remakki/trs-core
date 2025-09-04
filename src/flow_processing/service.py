@@ -28,7 +28,7 @@ class Subtitle:
 class FlowProcessing:
     def __init__(self, flow: dict[str, Any], mq_client: RabbitBroker, chunk_duration: int = 60):
         self._chunk_duration = chunk_duration
-        self._time = int(datetime.now(timezone.utc).timestamp()) - (self._chunk_duration * 3 // 2)
+        self._time = int(datetime.now(timezone.utc).timestamp() + 60 * 60 + 3) - (self._chunk_duration * 3 // 2)
         self._ai_search = OllamaClient(search_news_stories_system_prompt)
         self._ai_summarization = OllamaClient(summarize_news_story_system_prompt)
         self._transcription_client = TranscriptionClient()
