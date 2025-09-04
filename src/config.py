@@ -18,5 +18,12 @@ class Settings(BaseSettings):
     RABBITMQ_PORT: int
     RABBITMQ_QUEUE: str
 
+    @property
+    def RABBITMQ_URL(self):
+        return (
+            f"amqp://{self.RABBITMQ_USERNAME}:{self.RABBITMQ_PASSWORD}"
+            f"@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/"
+        )
+
 
 settings = Settings()

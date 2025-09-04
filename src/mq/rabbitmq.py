@@ -1,19 +1,11 @@
 from faststream.rabbit import RabbitBroker
-from faststream.security import SASLPlaintext
 
 from src.config import settings
 
 
 class RabbitMQ:
     def __init__(self):
-        self._broker = RabbitBroker(
-            host=settings.RABBITMQ_HOST,
-            port=settings.RABBITMQ_PORT,
-            security=SASLPlaintext(
-                username=settings.RABBITMQ_USERNAME,
-                password=settings.RABBITMQ_PASSWORD,
-            ),
-        )
+        self._broker = RabbitBroker(settings.RABBITMQ_URL)
 
     async def __aenter__(self) -> RabbitBroker:
         await self._broker.start()
