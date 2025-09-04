@@ -15,7 +15,7 @@ structlog.configure(
         structlog.processors.CallsiteParameterAdder(
             {
                 structlog.processors.CallsiteParameter.FUNC_NAME,
-                structlog.processors.CallsiteParameter.PATHNAME,
+                structlog.processors.CallsiteParameter.FILENAME,
                 structlog.processors.CallsiteParameter.LINENO,
             }
         ),

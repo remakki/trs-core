@@ -1,6 +1,7 @@
 import asyncio
 import json
 import time
+import traceback
 from datetime import datetime, timezone
 from json import JSONDecodeError
 from pathlib import Path
@@ -76,8 +77,8 @@ class FlowProcessing:
                 segments = await self._transcription_client.transcribe(filepath)
             except Exception as e:
                 log.error("Transcribing process error: %s", e)
+                log.error("Full traceback: %s", traceback.format_exc())
             else:
-                await delete_file(filepath)
                 subtitles = [
                     Subtitle(
                         start=self._time + segment["start"],
@@ -132,6 +133,8 @@ class FlowProcessing:
                                     **summary_result,
                                 }
                                 await self._mq.publish(notice_info, settings.RABBITMQ_QUEUE)
+            finally:
+                await delete_file(filepath)
 
     async def process(self) -> None:
         while True:
