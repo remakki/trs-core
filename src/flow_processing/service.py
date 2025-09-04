@@ -8,12 +8,12 @@ from typing import Any
 
 from faststream.rabbit import RabbitBroker
 
-from src.api import TranscriptionClient, get_video_from_archive, OllamaClient
+from src.api import OllamaClient, TranscriptionClient, get_video_from_archive
 from src.config import settings
-from src.log import log
 from src.flow_processing.utils import delete_file
-
+from src.log import log
 from src.promts import search_news_stories_system_prompt, summarize_news_story_system_prompt
+
 
 class Subtitle:
     def __init__(self, start: float, end: float, text: str):
@@ -36,7 +36,9 @@ class FlowProcessing:
         self._flow_info = flow
         self._subtitles: list[Subtitle] = []
 
-    def _get_subtitles_in_interval(self, start: float, end: float, presicion: float = 1.0) -> list[Subtitle]:
+    def _get_subtitles_in_interval(
+        self, start: float, end: float, presicion: float = 1.0
+    ) -> list[Subtitle]:
         """
         Get subtitles in the specified time interval with a given precision.
         """
@@ -51,9 +53,7 @@ class FlowProcessing:
         Remove subtitles that end before the specified time with a given precision.
         """
         self._subtitles = [
-            subtitle
-            for subtitle in self._subtitles
-            if subtitle.end >= end - presicion
+            subtitle for subtitle in self._subtitles if subtitle.end >= end - presicion
         ]
 
     @staticmethod
@@ -127,10 +127,11 @@ class FlowProcessing:
                                 notice_info = {
                                     "chat_id": self._flow_info["channel"],
                                     "time_range": interval,
+                                    "archive_url": self._flow_info["archive_url"],
+                                    "archive_token": self._flow_info["archive_token"],
                                     **summary_result,
                                 }
                                 await self._mq.publish(notice_info, settings.RABBITMQ_QUEUE)
-
 
     async def process(self) -> None:
         while True:

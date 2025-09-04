@@ -12,7 +12,7 @@ class RabbitMQ:
             security=SASLPlaintext(
                 username=settings.RABBITMQ_USERNAME,
                 password=settings.RABBITMQ_PASSWORD,
-            )
+            ),
         )
 
     async def __aenter__(self) -> RabbitBroker:

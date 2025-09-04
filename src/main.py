@@ -11,7 +11,7 @@ async def main():
             "title": "BBC News",
             "archive_url": "https://news.mediacdn.ru/bbc_rec",
             "archive_token": "media5c0p",
-            "channel": "@syn_trs_demo"
+            "channel": "@syn_trs_demo",
         }
     ]
 

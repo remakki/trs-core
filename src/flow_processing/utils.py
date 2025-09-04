@@ -17,5 +17,6 @@ async def delete_file(path: str | Path) -> None:
     except FileNotFoundError as e:
         log.error("file_not_found", path=str(path), error=str(e))
 
+
 def normalize_time(timestamp: float) -> str:
     return datetime.fromtimestamp(timestamp).strftime("%H:%M:%S")
