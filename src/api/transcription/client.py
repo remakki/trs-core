@@ -1,7 +1,6 @@
 from pathlib import Path
 
-import aiofiles
-import aiohttp
+import httpx
 
 from src.api.base_client import BaseClient
 from src.api.transcription.schemas import Segment
@@ -24,14 +23,13 @@ class TranscriptionClient(BaseClient):
         """
         endpoint = f"{self._base_url}/api/v1/auth/login"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(endpoint, json=self._credentials) as response:
-                response.raise_for_status()
-                data = await response.json()
+        async with httpx.AsyncClient() as client:
+            response = await client.post(endpoint, json=self._credentials)
+            response.raise_for_status()
+            data = response.json()
 
         token = data["access_token"]
         self._headers["Authorization"] = f"Bearer {token}"
-        print(self._headers)
 
     async def transcribe(
         self,
@@ -48,17 +46,16 @@ class TranscriptionClient(BaseClient):
 
         endpoint = f"{self._base_url}/api/v1/transcription/transcribe"
 
-        async with aiofiles.open(audio_file_path, "rb") as f:
-            file_bytes = await f.read()
+        audio_path = Path(audio_file_path)
+        files = {
+            "file": (audio_path.name, open(audio_path, "rb"), "audio/mpeg"),
+        }
+        data = {
+            "language": language,
+            "result_format": result_format,
+            "model": model,
+        }
 
-        form = aiohttp.FormData()
-        form.add_field("file", file_bytes, filename=Path(audio_file_path).name)
-        form.add_field("language", language)
-        form.add_field("result_format", result_format)
-        form.add_field("model", model)
-        print(form)
-
-        response = await self._post(endpoint=endpoint, data=form)
-        print(response)
-        result = await response.json()
+        response = await self._post(endpoint=endpoint, files=files, data=data)
+        result = response.json()
         return result["srt"]
