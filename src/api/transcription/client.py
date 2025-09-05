@@ -31,6 +31,7 @@ class TranscriptionClient(BaseClient):
 
         token = data["access_token"]
         self._headers["Authorization"] = f"Bearer {token}"
+        print(self._headers)
 
     async def transcribe(
         self,
@@ -55,7 +56,9 @@ class TranscriptionClient(BaseClient):
         form.add_field("language", language)
         form.add_field("result_format", result_format)
         form.add_field("model", model)
+        print(form)
 
         response = await self._post(endpoint=endpoint, data=form)
+        print(response)
         result = await response.json()
         return result["srt"]
