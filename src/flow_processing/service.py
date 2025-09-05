@@ -90,7 +90,7 @@ class FlowProcessing:
                 self._subtitles.extend(subtitles)
 
                 content = self._serialize_subtitles(self._subtitles)
-                log.info("content: %s", content)
+                log.info("content: %s", self._serialize_subtitles(subtitles))
                 try:
                     search_result = await self._ai_search.chat(content=content)
                     search_result = json.loads(search_result)
