@@ -1,4 +1,5 @@
 from functools import wraps
+import httpx
 
 
 def retry_on_unauthorized(func):
@@ -8,8 +9,8 @@ def retry_on_unauthorized(func):
 
     @wraps(func)
     async def wrapper(self, *args, **kwargs):
-        response = await func(self, *args, **kwargs)
-        if response.status == 401:
+        response: httpx.Response = await func(self, *args, **kwargs)
+        if response.status_code == 401:
             await self.login()
             response = await func(self, *args, **kwargs)
         response.raise_for_status()
