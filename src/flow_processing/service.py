@@ -99,7 +99,7 @@ class FlowProcessing:
                 except Exception as e:
                     log.error(f"Unexpected error: {e}")
                 else:
-                    if "intervals" in search_result and search_result["intervals"]:
+                    if isinstance(search_result, dict) and "intervals" in search_result and search_result["intervals"]:
                         for interval in search_result["intervals"]:
                             start_interval, end_interval = map(
                                 int,
