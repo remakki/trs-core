@@ -92,8 +92,10 @@ class FlowProcessing:
                 content = self._serialize_subtitles(self._subtitles)
                 log.info("content: %s", self._serialize_subtitles(subtitles))
                 try:
+                    log.info("Content for search: %s", content)
                     search_result = await self._ai_search.chat(content=content)
                     search_result = json.loads(search_result)
+                    log.info("Search result: %s", search_result)
                 except JSONDecodeError as e:
                     log.error("JSONDecodeError: %s", e)
                 except Exception as e:
@@ -114,10 +116,12 @@ class FlowProcessing:
                             self._remove_subtitles(end_interval)  # remove subtitles from list
                             content = self._serialize_subtitles(subtitles_in_interval)
                             try:
+                                log.info("content for summary: %s", content)
                                 summary_result_json = await self._ai_summarization.chat(
                                     content=content
                                 )
                                 summary_result = json.loads(summary_result_json)
+                                log.info("Summary result: %s", summary_result)
                             except JSONDecodeError as e:
                                 log.error("JSONDecode Error: %s", e)
                             except Exception as e:
@@ -133,6 +137,7 @@ class FlowProcessing:
                                     **summary_result,
                                 }
                                 await self._mq.publish(notice_info, settings.RABBITMQ_QUEUE)
+                                log.info("Notice has published: %s", notice_info)
             finally:
                 await delete_file(filepath)
 
