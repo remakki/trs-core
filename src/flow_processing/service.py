@@ -36,6 +36,15 @@ class FlowProcessing:
         self._mq = mq_client
         self._flow_info = flow
         self._subtitles: list[Subtitle] = []
+        self._max_subtitles = 100
+
+    def _add_subtitles(self, subtitles: list[Subtitle]) -> None:
+        """
+        Add multiple subtitles to the list of subtitles.
+        """
+        count_to_delete = max(len(self._subtitles) + len(subtitles) - self._max_subtitles, 0)
+        self._subtitles = self._subtitles[count_to_delete:]
+        self._subtitles += subtitles
 
     def _get_subtitles_in_interval(
         self, start: float, end: float, presicion: float = 1.0
@@ -87,7 +96,7 @@ class FlowProcessing:
                     )
                     for segment in segments
                 ]
-                self._subtitles.extend(subtitles)
+                self._add_subtitles(subtitles)
 
                 content = self._serialize_subtitles(self._subtitles)
                 log.info("content: %s", self._serialize_subtitles(subtitles))
