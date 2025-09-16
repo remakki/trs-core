@@ -1,3 +1,5 @@
+import asyncio
+
 import ollama
 
 from src.config import settings
@@ -12,9 +14,12 @@ class OllamaClient:
         self._model = model
         self._messages = [{"role": "system", "content": system_prompt}]
 
-    async def chat(self, content: str, model: str | None = None) -> str:
-        answer = await self._client.chat(
-            model=model or self._model,
-            messages=self._messages + [{"role": "user", "content": content}],
+    async def chat(self, content: str, model: str | None = None, timeout: float = 60.0) -> str:
+        answer = await asyncio.wait_for(
+            self._client.chat(
+                model=model or self._model,
+                messages=self._messages + [{"role": "user", "content": content}],
+            ),
+            timeout=timeout,
         )
         return answer["message"]["content"]
