@@ -1,4 +1,4 @@
-from advanced_alchemy.extensions.fastapi import service
+from advanced_alchemy import service
 
 from .models import SourceModel
 from .repositories import SourceRepository
