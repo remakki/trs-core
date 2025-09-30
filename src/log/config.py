@@ -30,4 +30,4 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-log = structlog.get_logger("trs-service")
+log = structlog.get_logger("trs-core")

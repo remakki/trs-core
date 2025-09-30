@@ -5,15 +5,15 @@ import traceback
 from datetime import datetime, timezone
 from json import JSONDecodeError
 from pathlib import Path
-from typing import Any
 
 from faststream.rabbit import RabbitBroker
 
 from src.api import OllamaClient, TranscriptionClient, get_video_from_archive
-from src.config import settings
-from src.flow_processing.utils import delete_file
+from src.source_processing.utils import delete_file
 from src.log import log
 from src.promts import search_news_stories_system_prompt, summarize_news_story_system_prompt
+from src.sources import SourceModel
+from src.sources.schemas import StorylineMessage
 
 
 class Subtitle:
@@ -26,15 +26,15 @@ class Subtitle:
         return f"[{self.start:.2f}-{self.end:.2f}] {self.text}"
 
 
-class FlowProcessing:
-    def __init__(self, flow: dict[str, Any], mq_client: RabbitBroker, chunk_duration: int = 60):
+class SourceProcessing:
+    def __init__(self, source: SourceModel, mq_client: RabbitBroker, chunk_duration: int = 60):
         self._chunk_duration = chunk_duration
         self._time = int(datetime.now(timezone.utc).timestamp()) - (self._chunk_duration * 3 // 2)
         self._ai_search = OllamaClient(search_news_stories_system_prompt)
         self._ai_summarization = OllamaClient(summarize_news_story_system_prompt)
         self._transcription_client = TranscriptionClient()
         self._mq = mq_client
-        self._flow_info = flow
+        self._source = source
         self._subtitles: list[Subtitle] = []
         self._max_subtitles = 100
 
@@ -76,7 +76,7 @@ class FlowProcessing:
     async def _iteration(self):
         try:
             filepath = Path("data") / f"{self._time}-{self._chunk_duration}.mp4"
-            url = f"{self._flow_info['archive_url']}/archive-{self._time}-{self._chunk_duration - 5}.mp4?token={self._flow_info['archive_token']}"
+            url = f"{self._source.archive_url}/archive-{self._time}-{self._chunk_duration - 5}.mp4?token={self._source.archive_token}"
             await get_video_from_archive(url, filepath)
         except Exception as err:
             log.error("An error occurred: %s", err)
@@ -114,19 +114,17 @@ class FlowProcessing:
                         isinstance(search_result, dict)
                         and "intervals" in search_result
                         and search_result["intervals"]
+                        and all(isinstance(interval, dict) for interval in search_result["intervals"])
                     ):
                         for interval in search_result["intervals"]:
                             start_interval, end_interval = map(
-                                int,
-                                map(
                                     float,
                                     [t for t in interval.strip().split("-")],
-                                ),
-                            )
+                                )
                             subtitles_in_interval = self._get_subtitles_in_interval(
                                 start_interval, end_interval
                             )
-                            self._remove_subtitles(end_interval)  # remove subtitles from list
+                            self._remove_subtitles(end_interval)
                             content = self._serialize_subtitles(subtitles_in_interval)
                             try:
                                 log.info("content for summary: %s", content)
@@ -134,23 +132,25 @@ class FlowProcessing:
                                     content=content
                                 )
                                 summary_result = json.loads(summary_result_json)
+
+                                storyline_message = StorylineMessage(
+                                    start_time=datetime.fromtimestamp(start_interval),
+                                    end_time=datetime.fromtimestamp(end_interval),
+                                    title=summary_result["title"],
+                                    summary=summary_result["summary"],
+                                    summary_ru=summary_result["summary_ru"],
+                                    temperature=summary_result["temperature"],
+                                    source_id=self._source.id,
+                                    tags=summary_result["tags"],
+                                )
                                 log.info("Summary result: %s", summary_result)
                             except JSONDecodeError as e:
                                 log.error("JSONDecode Error: %s", e)
                             except Exception as e:
                                 log.error(f"Unexpected error: {e}")
                             else:
-                                # save to DB
-
-                                notice_info = {
-                                    "chat_id": self._flow_info["channel"],
-                                    "time_range": interval,
-                                    "archive_url": self._flow_info["archive_url"],
-                                    "archive_token": self._flow_info["archive_token"],
-                                    **summary_result,
-                                }
-                                await self._mq.publish(notice_info, settings.RABBITMQ_QUEUE)
-                                log.info("Notice has published: %s", notice_info)
+                                await self._mq.publish(storyline_message, 'new_storyline')
+                                log.info(f"Storyline message: {storyline_message.model_dump()}")
             finally:
                 await delete_file(filepath)
 

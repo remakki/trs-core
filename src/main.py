@@ -1,22 +1,20 @@
 import asyncio
 
-from src.flow_processing.service import FlowProcessing
 from src.mq import RabbitMQ
+from src.source_processing.service import SourceProcessing
+from src.sources.dependencies import get_source_service
 
 
 async def main():
-    flows = [
-        {
-            "id": "bbc",
-            "title": "BBC News",
-            "archive_url": "https://news.mediacdn.ru/bbc_rec",
-            "archive_token": "media5c0p",
-            "channel": "@syn_trs_demo",
-        }
-    ]
+    source_service = await get_source_service()
+    sources = await source_service.get_active_sources()
+
+    while not sources:
+        await asyncio.sleep(60)
+        sources = await source_service.get_active_sources()
 
     async with RabbitMQ() as mq:
-        objects = [FlowProcessing(flow, mq) for flow in flows]
+        objects = [SourceProcessing(source, mq) for source in sources]
 
         async with asyncio.TaskGroup() as tg:
             for obj in objects:
