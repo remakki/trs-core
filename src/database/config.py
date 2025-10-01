@@ -1,7 +1,4 @@
-from advanced_alchemy.extensions.fastapi import (
-    AsyncSessionConfig,
-    SQLAlchemyAsyncConfig,
-)
+from advanced_alchemy.config import SQLAlchemyAsyncConfig, AsyncSessionConfig
 
 from src.config import settings
 
