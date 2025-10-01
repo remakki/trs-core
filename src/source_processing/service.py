@@ -114,7 +114,7 @@ class SourceProcessing:
                         isinstance(search_result, dict)
                         and "intervals" in search_result
                         and search_result["intervals"]
-                        and all(isinstance(interval, dict) for interval in search_result["intervals"])
+                        and all(isinstance(interval, str) for interval in search_result["intervals"])
                     ):
                         for interval in search_result["intervals"]:
                             start_interval, end_interval = map(
