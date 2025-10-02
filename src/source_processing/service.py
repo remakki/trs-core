@@ -134,8 +134,8 @@ class SourceProcessing:
                                 summary_result = json.loads(summary_result_json)
 
                                 storyline_message = StorylineMessage(
-                                    start_time=datetime.fromtimestamp(start_interval),
-                                    end_time=datetime.fromtimestamp(end_interval),
+                                    start_time=datetime.fromtimestamp(start_interval, tz=timezone.utc),
+                                    end_time=datetime.fromtimestamp(end_interval, tz=timezone.utc),
                                     title=summary_result["title"],
                                     summary=summary_result["summary"],
                                     summary_ru=summary_result["summary_ru"],
