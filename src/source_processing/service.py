@@ -1,7 +1,6 @@
 import asyncio
 import json
 import time
-import traceback
 from datetime import datetime, timezone
 from json import JSONDecodeError
 from pathlib import Path
@@ -85,8 +84,7 @@ class SourceProcessing:
                 log.info("Transcribing...")
                 segments = await self._transcription_client.transcribe(filepath)
             except Exception as e:
-                log.error("Transcribing process error: %s", e)
-                log.error("Full traceback: %s", traceback.format_exc())
+                log.error("Transcribing process error", error=str(e))
             else:
                 subtitles = [
                     Subtitle(
@@ -138,7 +136,7 @@ class SourceProcessing:
                                     end_time=datetime.fromtimestamp(end_interval, tz=timezone.utc),
                                     title=summary_result["title"],
                                     summary=summary_result["summary"],
-                                    summary_ru=summary_result["summary_ru"],
+                                    summary_ru='', # temporarily removed
                                     temperature=summary_result["temperature"],
                                     source_id=self._source.id,
                                     tags=summary_result["tags"],
