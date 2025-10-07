@@ -20,6 +20,10 @@ class OllamaClient:
                 model=model or self._model,
                 messages=self._messages + [{"role": "user", "content": content}],
                 format="json",
+                options={
+                    "temperature": 0.0,
+                    "seed": 42,
+                },
             ),
             timeout=timeout,
         )

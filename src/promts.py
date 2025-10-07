@@ -68,6 +68,8 @@ Input:
 
 Output:
 {"intervals": ["1757000100.00-1757000160.90", "1757000200.00-1757000260.33"]}
+
+Respond using JSON.
 """
 
 
@@ -131,4 +133,6 @@ Input:
 
 Output:
 {"title": "Trump criticizes immigration policies at Florida rally", "summary": "Donald Trump held a rally in Florida where he criticized the administration’s immigration policies and promised stronger border controls.", "temperature": "high tension", "tags": ["Trump", "Florida", "Immigration", "Border_Control", "Administration"]}
+
+Respond using JSON.
 """
