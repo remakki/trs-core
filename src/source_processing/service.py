@@ -101,8 +101,9 @@ class SourceProcessing:
                 try:
                     log.info("Content for search: %s", content)
                     search_result = await self._ai_search.chat(content=content)
-                    search_result = json.loads(search_result)
                     log.info("Search result: %s", search_result)
+                    search_result = json.loads(search_result)
+                    log.info("Search result json parsed: %s", search_result)
                 except JSONDecodeError as e:
                     log.error("JSONDecodeError: %s", e)
                 except Exception as e:
