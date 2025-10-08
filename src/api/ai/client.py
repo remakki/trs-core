@@ -19,11 +19,6 @@ class OllamaClient:
             self._client.chat(
                 model=model or self._model,
                 messages=self._messages + [{"role": "user", "content": content}],
-                format="json",
-                options={
-                    "temperature": 0.7,
-                    "seed": 42,
-                },
             ),
             timeout=timeout,
         )
