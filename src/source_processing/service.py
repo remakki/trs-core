@@ -46,7 +46,7 @@ class SourceProcessing:
         self._subtitles += subtitles
 
     def _get_subtitles_in_interval(
-        self, start: float, end: float, presicion: float = 1.0
+        self, start: float, end: float, precision: float = 1.0
     ) -> list[Subtitle]:
         """
         Get subtitles in the specified time interval with a given precision.
@@ -54,15 +54,15 @@ class SourceProcessing:
         return [
             subtitle
             for subtitle in self._subtitles
-            if subtitle.start >= start - presicion and subtitle.end <= end + presicion
+            if subtitle.start >= start - precision and subtitle.end <= end + precision
         ]
 
-    def _remove_subtitles(self, end: float, presicion: float = 1.0) -> None:
+    def _remove_subtitles(self, end: float, precision: float = 1.0) -> None:
         """
         Remove subtitles that end before the specified time with a given precision.
         """
         self._subtitles = [
-            subtitle for subtitle in self._subtitles if subtitle.end >= end - presicion
+            subtitle for subtitle in self._subtitles if subtitle.end >= end - precision
         ]
 
     @staticmethod
@@ -137,7 +137,7 @@ class SourceProcessing:
                                     end_time=datetime.fromtimestamp(end_interval, tz=timezone.utc),
                                     title=summary_result["title"],
                                     summary=summary_result["summary"],
-                                    summary_ru='', # temporarily removed
+                                    summary_ru=summary_result["summary_ru"],
                                     temperature=summary_result["temperature"],
                                     source_id=self._source.id,
                                     tags=summary_result["tags"],

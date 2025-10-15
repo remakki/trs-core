@@ -82,9 +82,10 @@ Where `start` and `end` are timestamps (float numbers, seconds), and `text` is t
 Your task is to produce a structured summary in JSON format with the following fields:
 
 1) "title": A short and clear headline that captures the main point of the news story.  
-2) "summary": A concise summary of the news story in the **original language of the subtitles**.  
-3) "temperature": An evaluation of the news story tone or temperature (for example: "neutral temperature", "high tension", "optimistic").  
-4) "tags": An array of tags representing the key entities, people, or topics in the story.  
+2) "summary": A concise summary of the news story in the **english language of the subtitles**.  
+3) "summary_ru": A concise summary of the news story in Russian.
+4) "temperature": An evaluation of the news story tone or temperature (for example: "neutral temperature", "high tension", "optimistic").  
+5) "tags": An array of tags representing the key entities, people, or topics in the story.  
 
 Tag formatting rules:
 - Use underscores instead of spaces, e.g. "United States" -> "United_States".  
@@ -95,7 +96,7 @@ Tag formatting rules:
 The model must output strictly raw JSON with no extra text, comments, or formatting.  
 
 Output format:
-{"title": "title", "summary": "summary", "temperature": "temperature", "tags": ["tag1", "tag2"]}
+{"title": "title", "summary": "summary", "summary_ru": "Краткое содержание на русском языке", "temperature": "temperature", "tags": ["tag1", "tag2"]}
 
 ---
 
@@ -109,7 +110,7 @@ Input:
 [1756728190.13-1756728198.87] That concludes our breaking news update. Stay with us for more information.  
 
 Output:
-{"title": "Powerful earthquake strikes capital city", "summary": "A powerful earthquake struck the capital city, causing widespread damage and possible casualties. Authorities are mobilizing emergency services.", "temperature": "high tension", "tags": ["Earthquake", "Capital_City", "Authorities"]}
+{"title": "Powerful earthquake strikes capital city", "summary": "A powerful earthquake struck the capital city, causing widespread damage and possible casualties. Authorities are mobilizing emergency services.", "summary_ru": "Мощное землетрясение произошло в столице, вызвав значительные разрушения и возможные жертвы. Власти мобилизуют экстренные службы.", "temperature": "high tension", "tags": ["Earthquake", "Capital_City", "Authorities"]}
 
 ---
 
@@ -120,7 +121,7 @@ Input:
 [1757000240.89-1757000260.33] That concludes the financial update.  
 
 Output:
-{"title": "Stock market closes higher on strong tech earnings", "summary": "The stock market closed higher today due to strong tech earnings.", "temperature": "neutral temperature", "tags": ["Stock_Market", "Tech_Earnings"]}
+{"title": "Stock market closes higher on strong tech earnings", "summary": "The stock market closed higher today due to strong tech earnings.", "summary_ru": "Рынок акций закрылся с ростом благодаря сильной прибыли технологических компаний.", "temperature": "neutral temperature", "tags": ["Stock_Market", "Tech_Earnings"]}
 
 ---
 
@@ -132,7 +133,7 @@ Input:
 [1757010060.78-1757010080.55] That concludes our political coverage for now.  
 
 Output:
-{"title": "Trump criticizes immigration policies at Florida rally", "summary": "Donald Trump held a rally in Florida where he criticized the administration’s immigration policies and promised stronger border controls.", "temperature": "high tension", "tags": ["Trump", "Florida", "Immigration", "Border_Control", "Administration"]}
+{"title": "Trump criticizes immigration policies at Florida rally", "summary": "Donald Trump held a rally in Florida where he criticized the administration’s immigration policies and promised stronger border controls.", "summary_ru": "Дональд Трамп провёл митинг во Флориде, где раскритиковал иммиграционную политику администрации и пообещал усилить контроль на границе.", "temperature": "high tension", "tags": ["Trump", "Florida", "Immigration", "Border_Control", "Administration"]}
 
 Respond using JSON.
 """
