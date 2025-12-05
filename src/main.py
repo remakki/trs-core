@@ -14,11 +14,15 @@ async def main():
         sources = await source_service.get_active_sources()
 
     async with RabbitMQ() as mq:
-        objects = [SourceProcessing(source, mq) for source in sources]
-
-        async with asyncio.TaskGroup() as tg:
-            for obj in objects:
-                tg.create_task(obj.process())
+        objects = [
+            SourceProcessing(source, mq) for source in sources
+        ]
+        tasks = [asyncio.create_task(obj.process()) for obj in objects]
+        try:
+            await asyncio.gather(*tasks)
+        except asyncio.CancelledError:
+            for task in tasks:
+                task.cancel()
 
 
 if __name__ == "__main__":

@@ -34,7 +34,7 @@ class TranscriptionClient(BaseClient):
     async def transcribe(
         self,
         audio_file_path: str | Path,
-        language: str = "en",
+        language: str | None = None,
         result_format: str = "srt",
         model: str = "turbo",
     ) -> list[Segment]:

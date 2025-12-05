@@ -13,3 +13,5 @@ class SourceModel(SoftDeleteMixin, BigIntAuditBase):
     archive_url: Mapped[str]
     archive_token: Mapped[str]
     is_active: Mapped[bool]
+    language: Mapped[str] # ru, en ...
+    chat_id: Mapped[str]

@@ -82,7 +82,7 @@ class SourceProcessing:
         else:
             try:
                 log.info("Transcribing...")
-                segments = await self._transcription_client.transcribe(filepath)
+                segments = await self._transcription_client.transcribe(filepath, language=self._source.language)
             except Exception as e:
                 log.error("Transcribing process error", error=str(e))
             else:
