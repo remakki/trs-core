@@ -74,7 +74,7 @@ class SourceProcessing:
 
     async def _iteration(self):
         try:
-            filepath = Path("data") / f"{self._time}-{self._chunk_duration}.mp4"
+            filepath = Path("data") / f"{self._source.id}-{self._time}-{self._chunk_duration}.mp4"
             url = f"{self._source.archive_url}/archive-{self._time}-{self._chunk_duration - 5}.mp4?token={self._source.archive_token}"
             await get_video_from_archive(url, filepath)
         except Exception as err:
