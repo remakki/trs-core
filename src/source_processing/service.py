@@ -10,7 +10,7 @@ from faststream.rabbit import RabbitBroker
 from src.api import OllamaClient, TranscriptionClient, get_video_from_archive
 from src.source_processing.utils import delete_file
 from src.log import log
-from src.promts import search_news_stories_system_prompt, summarize_news_story_system_prompt
+from src.promts import search_news_stories_system_prompt, summarize_news_story_system_ru_prompt, summarize_news_story_system_en_prompt
 from src.sources import SourceModel
 from src.sources.schemas import StorylineMessage
 
@@ -30,7 +30,7 @@ class SourceProcessing:
         self._chunk_duration = chunk_duration
         self._time = int(datetime.now(timezone.utc).timestamp()) - (self._chunk_duration * 3 // 2)
         self._ai_search = OllamaClient(search_news_stories_system_prompt)
-        self._ai_summarization = OllamaClient(summarize_news_story_system_prompt)
+        self._ai_summarization = OllamaClient()
         self._transcription_client = TranscriptionClient()
         self._mq = mq_client
         self._source = source
@@ -128,7 +128,12 @@ class SourceProcessing:
                             try:
                                 log.info("content for summary: %s", content)
                                 summary_result_json = await self._ai_summarization.chat(
-                                    content=content
+                                    content=content,
+                                    system_prompt=(
+                                        summarize_news_story_system_ru_prompt
+                                        if self._source.language == "ru"
+                                        else summarize_news_story_system_en_prompt
+                                    ),
                                 )
                                 summary_result = json.loads(summary_result_json)
 
@@ -137,7 +142,7 @@ class SourceProcessing:
                                     end_time=datetime.fromtimestamp(end_interval, tz=timezone.utc),
                                     title=summary_result["title"],
                                     summary=summary_result["summary"],
-                                    summary_ru=summary_result["summary_ru"],
+                                    summary_ru=summary_result.get("summary_ru", None),
                                     temperature=summary_result["temperature"],
                                     source_id=self._source.id,
                                     tags=summary_result["tags"],
