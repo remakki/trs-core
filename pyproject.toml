@@ -29,3 +29,8 @@ fixable = ["ALL"]
 quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.8",
+]

@@ -14,7 +14,13 @@ class OllamaClient:
         self._model = model or settings.OLLAMA_MODEL
         self._messages = [{"role": "system", "content": system_prompt}] if system_prompt else []
 
-    async def chat(self, content: str, system_prompt: str | None = None, model: str | None = None, timeout: float = 180.0) -> str:
+    async def chat(
+        self,
+        content: str,
+        system_prompt: str | None = None,
+        model: str | None = None,
+        timeout: float = 180.0,
+    ) -> str:
         messages = self._messages + [{"role": "user", "content": content}]
         if system_prompt:
             messages = [{"role": "system", "content": system_prompt}] + messages

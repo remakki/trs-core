@@ -195,4 +195,3 @@ summarize_news_story_system_ru_prompt = """
 
 Отвечай в формате JSON по образцу.
 """
-

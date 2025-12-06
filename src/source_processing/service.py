@@ -10,7 +10,11 @@ from faststream.rabbit import RabbitBroker
 from src.api import OllamaClient, TranscriptionClient, get_video_from_archive
 from src.source_processing.utils import delete_file
 from src.log import log
-from src.promts import search_news_stories_system_prompt, summarize_news_story_system_ru_prompt, summarize_news_story_system_en_prompt
+from src.promts import (
+    search_news_stories_system_prompt,
+    summarize_news_story_system_ru_prompt,
+    summarize_news_story_system_en_prompt,
+)
 from src.sources import SourceModel
 from src.sources.schemas import StorylineMessage
 
@@ -28,7 +32,7 @@ class Subtitle:
 class SourceProcessing:
     def __init__(self, source: SourceModel, mq_client: RabbitBroker, chunk_duration: int = 60):
         self._chunk_duration = chunk_duration
-        self._time = int(datetime.now(timezone.utc).timestamp()) - (self._chunk_duration * 3 // 2)
+        self._time = self._get_current_time()
         self._ai_search = OllamaClient(search_news_stories_system_prompt)
         self._ai_summarization = OllamaClient()
         self._transcription_client = TranscriptionClient()
@@ -36,6 +40,9 @@ class SourceProcessing:
         self._source = source
         self._subtitles: list[Subtitle] = []
         self._max_subtitles = 100
+
+    def _get_current_time(self) -> int:
+        return int(datetime.now(timezone.utc).timestamp()) - (self._chunk_duration * 3 // 2)
 
     def _add_subtitles(self, subtitles: list[Subtitle]) -> None:
         """
@@ -82,7 +89,9 @@ class SourceProcessing:
         else:
             try:
                 log.info("Transcribing...")
-                segments = await self._transcription_client.transcribe(filepath, language=self._source.language)
+                segments = await self._transcription_client.transcribe(
+                    filepath, language=self._source.language
+                )
             except Exception as e:
                 log.error("Transcribing process error", error=str(e))
             else:
@@ -113,13 +122,15 @@ class SourceProcessing:
                         isinstance(search_result, dict)
                         and "intervals" in search_result
                         and search_result["intervals"]
-                        and all(isinstance(interval, str) for interval in search_result["intervals"])
+                        and all(
+                            isinstance(interval, str) for interval in search_result["intervals"]
+                        )
                     ):
                         for interval in search_result["intervals"]:
                             start_interval, end_interval = map(
-                                    float,
-                                    [t for t in interval.strip().split("-")],
-                                )
+                                float,
+                                [t for t in interval.strip().split("-")],
+                            )
                             subtitles_in_interval = self._get_subtitles_in_interval(
                                 start_interval, end_interval
                             )
@@ -138,7 +149,9 @@ class SourceProcessing:
                                 summary_result = json.loads(summary_result_json)
 
                                 storyline_message = StorylineMessage(
-                                    start_time=datetime.fromtimestamp(start_interval, tz=timezone.utc),
+                                    start_time=datetime.fromtimestamp(
+                                        start_interval, tz=timezone.utc
+                                    ),
                                     end_time=datetime.fromtimestamp(end_interval, tz=timezone.utc),
                                     title=summary_result["title"],
                                     summary=summary_result["summary"],
@@ -153,7 +166,7 @@ class SourceProcessing:
                             except Exception as e:
                                 log.error(f"Unexpected error: {e}")
                             else:
-                                await self._mq.publish(storyline_message, 'new_storyline')
+                                await self._mq.publish(storyline_message, "new_storyline")
                                 log.info(f"Storyline message: {storyline_message.model_dump()}")
             finally:
                 await delete_file(filepath)
@@ -166,6 +179,8 @@ class SourceProcessing:
 
             duration_execution = end_time_counter - start_time_counter
             log.info("Duration execution: %s", str(duration_execution))
-            if duration_execution < self._chunk_duration:
-                await asyncio.sleep(self._chunk_duration - duration_execution)
+
             self._time += self._chunk_duration
+            cur_time = self._get_current_time()
+            if cur_time - self._time < 0:
+                await asyncio.sleep(self._time - cur_time)

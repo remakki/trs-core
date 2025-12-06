@@ -14,9 +14,7 @@ async def main():
         sources = await source_service.get_active_sources()
 
     async with RabbitMQ() as mq:
-        objects = [
-            SourceProcessing(source, mq) for source in sources
-        ]
+        objects = [SourceProcessing(source, mq) for source in sources]
         tasks = [asyncio.create_task(obj.process()) for obj in objects]
         try:
             await asyncio.gather(*tasks)
