@@ -127,10 +127,21 @@ class SourceProcessing:
                         )
                     ):
                         for interval in search_result["intervals"]:
-                            start_interval, end_interval = map(
-                                float,
-                                [t for t in interval.strip().split("-")],
-                            )
+                            parts = [t for t in interval.strip().split("-") if t]
+
+                            if len(parts) != 2:
+                                log.warning(
+                                    f"Skipping malformed interval: '{interval}'. "
+                                    "Expected exactly 2 timestamps separated by '-'.")
+                                continue
+
+                            try:
+                                start_interval = float(parts[0])
+                                end_interval = float(parts[1])
+                            except ValueError:
+                                log.error(
+                                    f"Skipping interval with non-numeric values: '{interval}'")
+                                continue
                             subtitles_in_interval = self._get_subtitles_in_interval(
                                 start_interval, end_interval
                             )
